@@ -37,7 +37,12 @@ pub fn log_panic(panic: &PanicInfo) {
             panic.line = location.line(),
             panic.column = location.column(),
         );
-        eprintln!("{}:{}:{}", location.file(), location.line(), location.column());
+        eprintln!(
+            "{}:{}:{}",
+            location.file(),
+            location.line(),
+            location.column()
+        );
     } else {
         tracing::error!(message = %panic, backtrace = %backtrace);
     }
@@ -126,10 +131,16 @@ async fn test_cluster() -> anyhow::Result<()> {
     println!("=== metrics after add-learner");
     let x = client.metrics().await?;
 
-    assert_eq!(&vec![btreeset![1]], x.membership_config.membership().get_joint_config());
+    assert_eq!(
+        &vec![btreeset![1]],
+        x.membership_config.membership().get_joint_config()
+    );
 
-    let nodes_in_cluster =
-        x.membership_config.nodes().map(|(nid, node)| (*nid, node.clone())).collect::<BTreeMap<_, _>>();
+    let nodes_in_cluster = x
+        .membership_config
+        .nodes()
+        .map(|(nid, node)| (*nid, node.clone()))
+        .collect::<BTreeMap<_, _>>();
     assert_eq!(
         btreemap! {
             1 => BasicNode::new("127.0.0.1:21001"),
@@ -249,7 +260,10 @@ async fn test_cluster() -> anyhow::Result<()> {
 
     println!("=== metrics after change-membership to {{3}}");
     let x = client.metrics().await?;
-    assert_eq!(&vec![btreeset![3]], x.membership_config.membership().get_joint_config());
+    assert_eq!(
+        &vec![btreeset![3]],
+        x.membership_config.membership().get_joint_config()
+    );
 
     println!("=== write `foo=zoo` to node-3");
     let _x = client3

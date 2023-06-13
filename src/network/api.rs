@@ -38,7 +38,10 @@ pub async fn read(app: Data<App>, req: Json<String>) -> actix_web::Result<impl R
 }
 
 #[post("/consistent_read")]
-pub async fn consistent_read(app: Data<App>, req: Json<String>) -> actix_web::Result<impl Responder> {
+pub async fn consistent_read(
+    app: Data<App>,
+    req: Json<String>,
+) -> actix_web::Result<impl Responder> {
     let ret = app.raft.is_leader().await;
 
     match ret {

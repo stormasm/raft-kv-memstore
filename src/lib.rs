@@ -1,6 +1,7 @@
 #![allow(clippy::uninlined_format_args)]
 #![deny(unused_qualifications)]
 
+use std::io::Cursor;
 use std::sync::Arc;
 
 use actix_web::middleware;
@@ -29,7 +30,8 @@ pub type NodeId = u64;
 
 openraft::declare_raft_types!(
     /// Declare the type configuration for example K/V store.
-    pub TypeConfig: D = Request, R = Response, NodeId = NodeId, Node = BasicNode, Entry = openraft::Entry<TypeConfig>
+    pub TypeConfig: D = Request, R = Response, NodeId = NodeId, Node = BasicNode,
+    Entry = openraft::Entry<TypeConfig>, SnapshotData = Cursor<Vec<u8>>
 );
 
 pub type LogStore = Adaptor<TypeConfig, Arc<Store>>;
@@ -43,7 +45,8 @@ pub mod typ {
     use crate::TypeConfig;
 
     pub type RaftError<E = openraft::error::Infallible> = openraft::error::RaftError<NodeId, E>;
-    pub type RPCError<E = openraft::error::Infallible> = openraft::error::RPCError<NodeId, BasicNode, RaftError<E>>;
+    pub type RPCError<E = openraft::error::Infallible> =
+        openraft::error::RPCError<NodeId, BasicNode, RaftError<E>>;
 
     pub type ClientWriteError = openraft::error::ClientWriteError<NodeId, BasicNode>;
     pub type CheckIsLeaderError = openraft::error::CheckIsLeaderError<NodeId, BasicNode>;
@@ -74,7 +77,9 @@ pub async fn start_example_raft_node(node_id: NodeId, http_addr: String) -> std:
     let network = Network {};
 
     // Create a local raft instance.
-    let raft = openraft::Raft::new(node_id, config.clone(), network, log_store, state_machine).await.unwrap();
+    let raft = openraft::Raft::new(node_id, config.clone(), network, log_store, state_machine)
+        .await
+        .unwrap();
 
     // Create an application that will store all the instances created above, this will
     // be later used on the actix-web services.
